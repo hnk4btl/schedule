@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>対戦スケジュール</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1, h2 {
+      margin: 10px 0;
+    }
+
+    label, button {
+      margin: 5px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 0 auto;
+      width: 98%;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid black;
+      font-size: 10pt;
+      text-align: center;
+      vertical-align: middle;
+      padding: 4px;
+      box-sizing: border-box;
+      word-wrap: break-word;
+    }
+
+    th.match-no {
+      width: 23px; /* nhỏ hơn nữa cho "試合" */
+    }
+
+    th:not(.match-no), td:not(:first-child) {
+      width: 23%;
+    }
+
+    .matchBox {
+      font-size: 17pt;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: pre-line;
+    }
+
+    #scheduleTitle {
+      margin-top: 1cm;
+      font-size: 14pt;
+      font-weight: bold;
+    }
+
+    @media print {
+      #header, #statistics {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>対戦スケジュール作成</h1>
+    <label>人数: <input type="number" id="numPlayers" value="28"></label>
+    <label>コート数: <input type="number" id="numCourts" value="4"></label>
+    <label>試合数: <input type="number" id="numRounds" value="13"></label>
+    <button onclick="generateSchedule()">作成</button>
+    <button onclick="downloadPDF()">PDF出力</button>
+  </div>
+
+  <h2 id="scheduleTitle"></h2>
+  <div id="schedule"></div>
+  <div id="statistics"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    function generateSchedule() {
+      const numPlayers = parseInt(document.getElementById("numPlayers").value);
+      const numCourts = parseInt(document.getElementById("numCourts").value);
+      const numRounds = parseInt(document.getElementById("numRounds").value);
+
+      let schedule = [];
+      let playCounts = new Array(numPlayers).fill(0);
+
+      for (let round = 0; round < numRounds; round++) {
+        let roundMatch = [];
+        let used = new Set();
+
+        for (let court = 0; court < numCourts; court++) {
+          let eligible = [];
+          for (let i = 0; i < numPlayers; i++) {
+            if (!used.has(i + 1)) eligible.push(i + 1);
+          }
+
+          eligible.sort(() => Math.random() - 0.5);
+          eligible.sort((a, b) => playCounts[a - 1] - playCounts[b - 1]);
+
+          if (eligible.length < 4) break;
+
+          let pair = eligible.slice(0, 4);
+          pair.forEach(p => {
+            used.add(p);
+            playCounts[p - 1]++;
+          });
+
+          roundMatch.push(pair);
+        }
+
+        schedule.push(roundMatch);
+      }
+
+      displaySchedule(schedule, numPlayers, numCourts, playCounts);
+    }
+
+    function displaySchedule(schedule, numPlayers, numCourts, playCounts) {
+      const scheduleDiv = document.getElementById("schedule");
+      const statisticsDiv = document.getElementById("statistics");
+
+      document.getElementById("scheduleTitle").innerText =
+        `対戦スケジュール（${schedule.length}試合・${numPlayers}人・${numCourts}コート）`;
+
+      let html = `<table><tr><th class="match-no">試合</th>`;
+      for (let i = 0; i < schedule[0].length; i++) {
+        html += `<th>コート${i + 1}</th>`;
+      }
+      html += `</tr>`;
+
+      for (let r = 0; r < schedule.length; r++) {
+        html += `<tr><td>${r + 1}</td>`;
+        for (let c = 0; c < schedule[r].length; c++) {
+          let match = schedule[r][c];
+          let formatted = `${match[0]} ・ ${match[1]}\n${match[2]} ・ ${match[3]}`;
+          html += `<td><div class="matchBox">${formatted}</div></td>`;
+        }
+        html += `</tr>`;
+      }
+
+      html += `</table>`;
+      scheduleDiv.innerHTML = html;
+
+      // Thống kê (chỉ hiển thị trên web, không in PDF)
+      let stats = `<h3>統計（出場回数）</h3><table><tr><th>番号</th>`;
+      for (let i = 1; i <= numPlayers; i++) {
+        stats += `<td>${i}</td>`;
+      }
+      stats += `</tr><tr><th>回数</th>`;
+      for (let i = 0; i < numPlayers; i++) {
+        stats += `<td>${playCounts[i]}</td>`;
+      }
+      stats += `</tr></table>`;
+      statisticsDiv.innerHTML = stats;
+    }
+
+    function downloadPDF() {
+      const element = document.createElement("div");
+      const title = document.getElementById("scheduleTitle").cloneNode(true);
+      const content = document.getElementById("schedule").cloneNode(true);
+      element.appendChild(title);
+      element.appendChild(content);
+
+      const opt = {
+        margin: 0,
+        filename: 'badminton_schedule.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
+</body>
+</html>
