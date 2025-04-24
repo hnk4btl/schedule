@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>対戦スケジュール</title>
@@ -14,7 +14,7 @@
       margin: 10px 0;
     }
 
-    label, button {
+    label, button, select {
       margin: 5px;
     }
 
@@ -36,7 +36,7 @@
     }
 
     th.match-no {
-      width: 23px; /* nhỏ hơn nữa cho "試合" */
+      width: 28px;
     }
 
     th:not(.match-no), td:not(:first-child) {
@@ -44,8 +44,8 @@
     }
 
     .matchBox {
-      font-size: 17pt;
-      height: 62px;
+      font-size: 10pt;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -58,10 +58,46 @@
       font-weight: bold;
     }
 
+    .current-match {
+      background-color: #ffe0b3 !important;
+    }
+
     @media print {
-      #header, #statistics {
+      #header, #statistics, #controlArea {
         display: none;
       }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 15% auto;
+      padding: 20px;
+      width: 300px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .modal-content div {
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .close {
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -76,11 +112,30 @@
   </div>
 
   <h2 id="scheduleTitle"></h2>
+
+  <div id="controlArea">
+    <label for="matchSelect">現在の試合:</label>
+    <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
+    <button onclick="nextMatch()">次の試合へ進む</button>
+  </div>
+
   <div id="schedule"></div>
   <div id="statistics"></div>
 
+  <!-- Pop-up -->
+  <div id="matchModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">✕</span>
+      <h3 id="modalTitle"></h3>
+      <div id="modalCourts"></div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
+    let globalSchedule = [];
+    let currentMatchIndex = 0;
+
     function generateSchedule() {
       const numPlayers = parseInt(document.getElementById("numPlayers").value);
       const numCourts = parseInt(document.getElementById("numCourts").value);
@@ -116,7 +171,11 @@
         schedule.push(roundMatch);
       }
 
+      globalSchedule = schedule;
+      currentMatchIndex = 0;
       displaySchedule(schedule, numPlayers, numCourts, playCounts);
+      updateDropdownOptions(schedule);
+      showMatchModal(currentMatchIndex);
     }
 
     function displaySchedule(schedule, numPlayers, numCourts, playCounts) {
@@ -133,7 +192,8 @@
       html += `</tr>`;
 
       for (let r = 0; r < schedule.length; r++) {
-        html += `<tr><td>${r + 1}</td>`;
+        const isCurrent = r === currentMatchIndex ? 'current-match' : '';
+        html += `<tr class="${isCurrent}" onclick="showMatchModal(${r})"><td>${r + 1}</td>`;
         for (let c = 0; c < schedule[r].length; c++) {
           let match = schedule[r][c];
           let formatted = `${match[0]} ・ ${match[1]}\n${match[2]} ・ ${match[3]}`;
@@ -145,7 +205,7 @@
       html += `</table>`;
       scheduleDiv.innerHTML = html;
 
-      // Thống kê (chỉ hiển thị trên web, không in PDF)
+      // Thống kê
       let stats = `<h3>統計（出場回数）</h3><table><tr><th>番号</th>`;
       for (let i = 1; i <= numPlayers; i++) {
         stats += `<td>${i}</td>`;
@@ -158,11 +218,64 @@
       statisticsDiv.innerHTML = stats;
     }
 
+    function updateDropdownOptions(schedule) {
+      const matchSelect = document.getElementById("matchSelect");
+      matchSelect.innerHTML = "";
+      for (let i = 0; i < schedule.length; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.text = `試合 ${i + 1}`;
+        matchSelect.appendChild(option);
+      }
+      matchSelect.value = currentMatchIndex;
+    }
+
+    function jumpToMatch(index) {
+      currentMatchIndex = parseInt(index);
+      showMatchModal(currentMatchIndex);
+      displaySchedule(globalSchedule,
+        parseInt(document.getElementById("numPlayers").value),
+        parseInt(document.getElementById("numCourts").value),
+        globalSchedule.flat().flat().reduce((counts, p) => {
+          counts[p - 1] = (counts[p - 1] || 0) + 1;
+          return counts;
+        }, new Array(parseInt(document.getElementById("numPlayers").value)).fill(0))
+      );
+    }
+
+    function nextMatch() {
+      if (currentMatchIndex < globalSchedule.length - 1) {
+        currentMatchIndex++;
+        jumpToMatch(currentMatchIndex);
+      }
+    }
+
+    function showMatchModal(index) {
+      const modal = document.getElementById("matchModal");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalCourts = document.getElementById("modalCourts");
+      const match = globalSchedule[index];
+
+      modalTitle.textContent = `試合 ${index + 1}`;
+      modalCourts.innerHTML = "";
+
+      for (let i = 0; i < match.length; i++) {
+        const div = document.createElement("div");
+        div.innerText = `コート${i + 1}\n${match[i][0]}・${match[i][1]}\n${match[i][2]}・${match[i][3]}`;
+        modalCourts.appendChild(div);
+      }
+
+      modal.style.display = "block";
+      document.getElementById("matchSelect").value = index;
+    }
+
+    function closeModal() {
+      document.getElementById("matchModal").style.display = "none";
+    }
+
     function downloadPDF() {
       const element = document.createElement("div");
-      const title = document.getElementById("scheduleTitle").cloneNode(true);
       const content = document.getElementById("schedule").cloneNode(true);
-      element.appendChild(title);
       element.appendChild(content);
 
       const opt = {
