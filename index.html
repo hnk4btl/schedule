@@ -141,6 +141,7 @@
     <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
     <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
     <button onclick="generateSchedule()">Tạo lịch đấu</button>
+    <button onclick="clearData()" style="margin-left: 10px;">Xóa dữ liệu</button>
   </div>
   
   <h2 id="scheduleTitle">Lịch Thi Đấu</h2>
@@ -175,6 +176,54 @@
     let dragSrc = null;
     let isVietnamese = true;
 
+    // Lưu dữ liệu vào localStorage
+    function saveData() {
+      const data = {
+        schedule: globalSchedule,
+        currentMatchIndex: currentMatchIndex,
+        numPlayers: document.getElementById('numPlayers').value,
+        numCourts: document.getElementById('numCourts').value,
+        numRounds: document.getElementById('numRounds').value,
+        isVietnamese: isVietnamese
+      };
+      localStorage.setItem('badmintonScheduleData', JSON.stringify(data));
+    }
+
+    // Load dữ liệu từ localStorage
+    function loadData() {
+      const savedData = localStorage.getItem('badmintonScheduleData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        globalSchedule = data.schedule || [];
+        currentMatchIndex = data.currentMatchIndex || 0;
+        document.getElementById('numPlayers').value = data.numPlayers || 28;
+        document.getElementById('numCourts').value = data.numCourts || 4;
+        document.getElementById('numRounds').value = data.numRounds || 13;
+        isVietnamese = data.isVietnamese !== undefined ? data.isVietnamese : true;
+        
+        // Cập nhật giao diện
+        toggleLanguage();
+        updateDropdownOptions();
+        displaySchedule();
+        updateStatistics();
+        
+        // Hiển thị các phần tử đã bị ẩn ban đầu
+        document.getElementById('scheduleTitle').style.display = 'block';
+        document.getElementById('controlArea').style.display = 'block';
+        document.getElementById('schedule').style.display = 'block';
+        document.getElementById('statistics').style.display = 'block';
+      }
+    }
+
+    // Xóa dữ liệu đã lưu
+    function clearData() {
+      localStorage.removeItem('badmintonScheduleData');
+      location.reload();
+    }
+
+    // Gọi hàm loadData khi trang được tải
+    window.addEventListener('load', loadData);
+
     function toggleLanguage() {
       isVietnamese = !isVietnamese;
       if (isVietnamese) {
@@ -185,6 +234,7 @@
           <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
           <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
           <button onclick="generateSchedule()">Tạo lịch đấu</button>
+          <button onclick="clearData()" style="margin-left: 10px;">Xóa dữ liệu</button>
         `;
         document.getElementById('controlArea').innerHTML = `
           <label for="matchSelect">Trận hiện tại:</label>
@@ -201,6 +251,7 @@
           <label>コート数: <input type="number" id="numCourts" value="4" min="1"></label>
           <label>試合数: <input type="number" id="numRounds" value="13" min="1"></label>
           <button onclick="generateSchedule()">作成</button>
+          <button onclick="clearData()" style="margin-left: 10px;">データ消去</button>
         `;
         document.getElementById('controlArea').innerHTML = `
           <label for="matchSelect">現在の試合:</label>
@@ -210,6 +261,7 @@
         document.getElementById('toggleButton').innerHTML = "Tiếng Việt / 日本語";
         document.getElementById('scheduleTitle').textContent = "試合スケジュール";
       }
+      saveData(); // Lưu trạng thái ngôn ngữ
       updateDropdownOptions();
       displaySchedule();
       updateStatistics();
@@ -259,6 +311,7 @@
       }
       globalSchedule = schedule;
       currentMatchIndex = 0;
+      saveData(); // Lưu dữ liệu sau khi tạo lịch
       updateDropdownOptions();
       displaySchedule();
       showMatchModal(0);
@@ -302,15 +355,20 @@
     }
 
     function nextMatch() { 
-      if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1); 
+      if (currentMatchIndex < globalSchedule.length - 1) {
+        jumpToMatch(currentMatchIndex + 1); 
+      }
     }
     
     function nextMatchModal() { 
-      if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1); 
+      if (currentMatchIndex < globalSchedule.length - 1) {
+        jumpToMatch(currentMatchIndex + 1); 
+      }
     }
 
     function jumpToMatch(i) {
       currentMatchIndex = +i;
+      saveData(); // Lưu trận hiện tại
       updateDropdownOptions();
       displaySchedule();
       showMatchModal(currentMatchIndex);
@@ -398,6 +456,7 @@
       const tmp = globalSchedule[currentMatchIndex][srcC][srcI];
       globalSchedule[currentMatchIndex][srcC][srcI] = globalSchedule[currentMatchIndex][tgtC][tgtI];
       globalSchedule[currentMatchIndex][tgtC][tgtI] = tmp;
+      saveData(); // Lưu thay đổi sau khi kéo thả
       showMatchModal(currentMatchIndex); 
       displaySchedule(); 
       updateStatistics();
