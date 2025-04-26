@@ -1,206 +1,551 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>対戦スケジュール</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    h1, h2 { margin: 10px 0; }
-    label, button, select { margin: 5px; }
-    table { border-collapse: collapse; margin: 0 auto; width: 98%; table-layout: fixed; }
-    th, td { border: 1px solid black; font-size: 10pt; text-align: center; vertical-align: middle; padding: 4px; box-sizing: border-box; word-wrap: break-word; }
-    th.match-no { width: 28px; }
-    th:not(.match-no), td:not(:first-child) { width: 23%; }
-    .matchBox { font-size: 10pt; height: 42px; display: flex; align-items: center; justify-content: center; white-space: pre-line; }
-    #scheduleTitle { margin-top: 1cm; font-size: 14pt; font-weight: bold; }
-    .current-match { background-color: #ffe0b3 !important; }
-    @media print { #header, #statistics, #controlArea { display: none; } }
+    <meta charset="UTF-8">
+    <title>Lịch Thi Đấu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
 
-    /* Modal styling */
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); }
-    .modal-content { background-color: white; margin: 5% auto; padding: 20px; width: 85%; max-width: 900px; border-radius: 10px; text-align: center; position: relative; }
-    #modalCourts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .court-box { border: 1px solid #666; padding: 10px; box-sizing: border-box; margin: 0; min-height: 140px; }
-    .court-box h4 { margin: 0 0 10px; font-size: 16pt; }
-    .pair-group { display: flex; justify-content: space-between; margin: 8px 0; }
-    .player-box { width: 48%; padding: 8px; border-radius: 6px; text-align: center; cursor: grab; user-select: none; font-size: 14pt; }
-    .team1 { background-color: #ADD8E6; }
-    .team2 { background-color: #FFDAB9; }
-    .modal-buttons { margin-top: 15px; display: flex; justify-content: space-around; }
-    .modal-buttons button { padding: 8px 16px; font-size: 12pt; cursor: pointer; }
-    .close { display: none; }
-  </style>
+        h1, h2 {
+            margin: 10px 0;
+        }
+
+        label, button, select {
+            margin: 5px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            width: 98%;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid black;
+            font-size: 10pt;
+            text-align: center;
+            vertical-align: middle;
+            padding: 4px;
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+
+        th.match-no {
+            width: 28px;
+        }
+
+        th:not(.match-no), td:not(:first-child) {
+            width: 23%;
+        }
+
+        .matchBox {
+            font-size: 10pt;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: pre-line;
+        }
+
+        #scheduleTitle {
+            margin-top: 1cm;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .current-match {
+            background-color: #ffe0b3 !important;
+        }
+
+        @media print {
+            #header,
+            #statistics,
+            #controlArea {
+                display: none;
+            }
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 85%;
+            max-width: 900px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        #modalCourts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .court-box {
+            border: 1px solid #666;
+            padding: 10px;
+            box-sizing: border-box;
+            margin: 0;
+            min-height: 140px;
+        }
+
+        .court-box h4 {
+            margin: 0 0 10px;
+            font-size: 16pt;
+        }
+
+        .pair-group {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .player-box {
+            width: 48%;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: grab;
+            user-select: none;
+            font-size: 14pt;
+        }
+
+        .team1 {
+            background-color: #ADD8E6;
+        }
+
+        .team2 {
+            background-color: #FFDAB9;
+        }
+
+        .modal-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .modal-buttons button {
+            padding: 8px 16px;
+            font-size: 12pt;
+            cursor: pointer;
+        }
+
+        .close {
+            display: none;
+        }
+
+        #creatorModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #creatorModal .modal-content {
+            background-color: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        #creatorModal .modal-content h2 {
+            font-size: 16pt;
+            margin-bottom: 10px;
+        }
+
+        #creatorModal .modal-content p {
+            font-size: 12pt;
+            margin-bottom: 15px;
+        }
+
+        #creatorModal .modal-content button {
+            padding: 8px 16px;
+            font-size: 12pt;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <div id="header">
-    <h1>対戦スケジュール作成</h1>
-    <label>人数: <input type="number" id="numPlayers" value="28" min="4"></label>
-    <label>コート数: <input type="number" id="numCourts" value="4" min="1"></label>
-    <label>試合数: <input type="number" id="numRounds" value="13" min="1"></label>
-    <button onclick="generateSchedule()">作成</button>
-  </div>
-
-  <h2 id="scheduleTitle"></h2>
-  <div id="controlArea">
-    <label for="matchSelect">現在の試合:</label>
-    <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
-    <button onclick="nextMatch()">次の試合へ進む</button>
-  </div>
-
-  <div id="schedule"></div>
-  <div id="statistics"></div>
-
-  <!-- Pop-up Modal -->
-  <div id="matchModal" class="modal">
-    <div class="modal-content">
-      <h3 id="modalTitle"></h3>
-      <div id="modalCourts"></div>
-      <div class="modal-buttons">
-        <button onclick="closeModal()">閉じる</button>
-        <button onclick="nextMatchModal()">次の試合へ進む</button>
-      </div>
+    <div id="header">
+        <h1>Lịch Thi Đấu</h1>
+        <label>Số người chơi: <input type="number" id="numPlayers" value="28" min="4"></label>
+        <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
+        <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
+        <button onclick="generateSchedule()">Tạo lịch đấu</button>
     </div>
-  </div>
+    <div id="creatorInfo">
+        <button onclick="showCreatorModal()">Created by HOANG NAM</button>
+    </div>
 
-  <script>
-    let globalSchedule = [];
-    let currentMatchIndex = 0;
-    let dragSrc = null;
+    <h2 id="scheduleTitle" style="display: none;">Lịch Thi Đấu</h2>
+    <div id="controlArea" style="display: none;">
+        <label for="matchSelect">Trận hiện tại:</label>
+        <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
+        <button onclick="nextMatch()">Trận tiếp theo</button>
+    </div>
 
-    // Fisher-Yates shuffle
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
+    <div id="schedule" style="display: none;"></div>
+    <div id="statistics" style="display: none;"></div>
 
-    function generateSchedule() {
-      const numPlayers = +document.getElementById('numPlayers').value;
-      const numCourts = +document.getElementById('numCourts').value;
-      const numRounds = +document.getElementById('numRounds').value;
-      const players = Array.from({ length: numPlayers }, (_, i) => i + 1);
-      const playCounts = Array(numPlayers).fill(0);
-      const history = Array.from({ length: numPlayers }, () => []);
-      const schedule = [];
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <div id="modalCourts"></div>
+            <div class="modal-buttons">
+                <button onclick="closeModal()">Đóng</button>
+                <button onclick="nextMatchModal()">Trận tiếp theo</button>
+            </div>
+        </div>
+    </div>
 
-      for (let round = 0; round < numRounds; round++) {
-        const roundMatch = [];
-        const used = new Set();
-        for (let court = 0; court < numCourts; court++) {
-          let eligible = players.filter(p => {
-            const h = history[p - 1];
-            const last2 = h.slice(-2);
-            const played2 = last2[0] === round - 2 && last2[1] === round - 1;
-            const missed2 = h.length > 1 && h[h.length - 2] < round - 2 && h[h.length - 1] < round - 1;
-            return !used.has(p) && !played2 && !missed2;
-          });
-          if (eligible.length < 4) eligible = players.filter(p => !used.has(p));
-          shuffle(eligible);
-          eligible.sort((a, b) => playCounts[a - 1] - playCounts[b - 1]);
-          const group = eligible.slice(0, 4);
-          group.forEach(p => { used.add(p); playCounts[p - 1]++; history[p - 1].push(round); });
-          roundMatch.push(group);
+    <div id="languageToggle" style="position: absolute; top: 20px; right: 20px;">
+        <button id="toggleButton" onclick="toggleLanguage()">日本語 / Tiếng Việt</button>
+    </div>
+
+    <div id="creatorModal" class="modal">
+        <div class="modal-content">
+            <h2>Người tạo</h2>
+            <p>Ứng dụng này được tạo bởi HOANG NAM.</p>
+            <button onclick="closeCreatorModal()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        let globalSchedule = [];
+        let currentMatchIndex = 0;
+        let dragSrc = null;
+        let isVietnamese = true;
+
+        function toggleLanguage() {
+            isVietnamese = !isVietnamese;
+            const lang = isVietnamese ? "vi" : "ja";
+            document.documentElement.lang = lang;
+            const headerHTML = isVietnamese ?
+                `<h1>Lịch Thi Đấu</h1>
+                 <label>Số người chơi: <input type="number" id="numPlayers" value="28" min="4"></label>
+                 <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
+                 <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
+                 <button onclick="generateSchedule()">Tạo lịch đấu</button>` :
+                `<h1>試合スケジュール</h1>
+                 <label>人数: <input type="number" id="numPlayers" value="28" min="4"></label>
+                 <label>コート数: <input type="number" id="numCourts" value="4" min="1"></label>
+                 <label>試合数: <input type="number" id="numRounds" value="13" min="1"></label>
+                 <button onclick="generateSchedule()">作成</button>`;
+            document.getElementById('header').innerHTML = headerHTML;
+
+            const controlHTML = isVietnamese ?
+                `<label for="matchSelect">Trận hiện tại:</label>
+                 <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
+                 <button onclick="nextMatch()">Trận tiếp theo</button>` :
+                `<label for="matchSelect">現在の試合:</label>
+                 <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
+                 <button onclick="nextMatch()">次の試合へ進む</button>`;
+            document.getElementById('controlArea').innerHTML = controlHTML;
+
+            document.getElementById('toggleButton').textContent = isVietnamese ? "日本語 / Tiếng Việt" : "Tiếng Việt / 日本語";
+            document.getElementById('scheduleTitle').textContent = isVietnamese ? "Lịch Thi Đấu" : "試合スケジュール";
+            updateDropdownOptions();
+            displaySchedule();
+            updateStatistics();
+            if (globalSchedule.length > 0) {
+                document.getElementById('modalTitle').textContent = isVietnamese ? `Trận ${currentMatchIndex + 1}` : `試合 ${currentMatchIndex + 1}`;
+                const modalButtons = document.querySelector('.modal-buttons');
+                if (modalButtons) {
+                    modalButtons.innerHTML = `
+                        <button onclick="closeModal()">${isVietnamese ? 'Đóng' : '閉じる'}</button>
+                        <button onclick="nextMatchModal()">${isVietnamese ? 'Trận tiếp theo' : '次の試合へ'}</button>
+                    `;
+                }
+            }
         }
-        schedule.push(roundMatch);
-      }
-      globalSchedule = schedule;
-      currentMatchIndex = 0;
-      updateDropdownOptions();
-      displaySchedule();
-      showMatchModal(0);
-      updateStatistics();
-    }
 
-    function updateDropdownOptions() {
-      const sel = document.getElementById('matchSelect'); sel.innerHTML = '';
-      globalSchedule.forEach((_, i) => {
-        const opt = document.createElement('option'); opt.value = i; opt.textContent = `試合 ${i + 1}`; sel.appendChild(opt);
-      });
-      sel.value = currentMatchIndex;
-    }
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
-    function displaySchedule() {
-      const d = document.getElementById('schedule');
-      let html = `<table><tr><th class=\"match-no\">試合</th>`;
-      globalSchedule[0].forEach((_, i) => html += `<th>コート${i + 1}</th>`);
-      html += '</tr>';
-      globalSchedule.forEach((rnd, rIdx) => {
-        const cls = rIdx === currentMatchIndex ? 'current-match' : '';
-        html += `<tr class=\"${cls}\" onclick=\"showMatchModal(${rIdx})\"><td>${rIdx + 1}</td>`;
-        rnd.forEach(g => {
-          const f = `${g[0]} ・ ${g[1]}\n${g[2]} ・ ${g[3]}`;
-          html += `<td><div class=\"matchBox\">${f}</div></td>`;
-        });
-        html += '</tr>';
-      });
-      html += '</table>';
-      d.innerHTML = html;
-    }
+        function generateSchedule() {
+            const numPlayers = +document.getElementById('numPlayers').value;
+            const numCourts = +document.getElementById('numCourts').value;
+            const numRounds = +document.getElementById('numRounds').value;
+            const players = Array.from({ length: numPlayers }, (_, i) => i + 1);
+            const playCounts = Array(numPlayers).fill(0);
+            const history = Array.from({ length: numPlayers }, () => []);
+            const schedule = [];
 
-    function nextMatch() { if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1); }
-    function nextMatchModal() { if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1); }
+            for (let round = 0; round < numRounds; round++) {
+                let roundMatch = [];
+                let attempts = 0;
+                while (roundMatch.length < numCourts && attempts < 1000) { // Giới hạn số lần thử
+                    const currentCourts = [];
+                    const used = new Set();
+                    let possible = true;
 
-    function jumpToMatch(i) {
-      currentMatchIndex = +i;
-      updateDropdownOptions();
-      displaySchedule();
-      showMatchModal(currentMatchIndex);
-      updateStatistics();
-    }
+                    for (let court = 0; court < numCourts; court++) {
+                        let eligible = players.filter(p => {
+                            if (used.has(p)) return false;
+                            const h = history[p - 1];
+                            const lastPlayed = h.slice(-1)[0];
+                            const lastTwoPlayed = h.slice(-2);
+                            const playedTwiceConsecutive = lastTwoPlayed.length === 2 && lastTwoPlayed[0] === round - 2 && lastTwoPlayed[1] === round - 1;
+                            const lastTwoRested = h.length >= 2 && h[h.length - 1] < round - 1 && h[h.length - 2] < round - 2;
+                            return !playedTwiceConsecutive && !lastTwoRested;
+                        });
 
-    function showMatchModal(idx) {
-      const modal = document.getElementById('matchModal');
-      const mc = document.getElementById('modalCourts'); mc.innerHTML = '';
-      document.getElementById('modalTitle').textContent = `試合 ${idx + 1}`;
-      mc.style.setProperty('--num-courts', globalSchedule[idx].length);
-      globalSchedule[idx].forEach((grp, ci) => {
-        const courtDiv = document.createElement('div'); courtDiv.className = 'court-box';
-        const title = document.createElement('h4'); title.textContent = `コート ${ci + 1}`; courtDiv.appendChild(title);
+                        if (eligible.length < 4) {
+                            eligible = players.filter(p => !used.has(p));
+                        }
 
-        // upper pair
-        const pair1 = document.createElement('div'); pair1.className = 'pair-group';
-        const p1a = document.createElement('div'); p1a.className = 'player-box team1'; p1a.textContent = grp[0];
-        const p1b = document.createElement('div'); p1b.className = 'player-box team1'; p1b.textContent = grp[1];
-        pair1.append(p1a, p1b); courtDiv.appendChild(pair1);
-        // lower pair
-        const pair2 = document.createElement('div'); pair2.className = 'pair-group';
-        const p2a = document.createElement('div'); p2a.className = 'player-box team2'; p2a.textContent = grp[2];
-        const p2b = document.createElement('div'); p2b.className = 'player-box team2'; p2b.textContent = grp[3];
-        pair2.append(p2a, p2b); courtDiv.appendChild(pair2);
+                        shuffle(eligible);
+                        eligible.sort((a, b) => playCounts[a - 1] - playCounts[b - 1]);
+                        const group = eligible.slice(0, 4);
 
-        [p1a, p1b, p2a, p2b].forEach((box, idx) => {
-          box.draggable = true; box.dataset.c = ci; box.dataset.i = idx;
-          box.addEventListener('dragstart', dragStart);
-          box.addEventListener('dragover', e => e.preventDefault());
-          box.addEventListener('drop', dropPlayer);
-        });
-        mc.appendChild(courtDiv);
-      });
-      modal.style.display = 'block'; document.getElementById('matchSelect').value = idx;
-    }
+                        if (group.length === 4) {
+                            const validGroup = !group.some(p => {
+                                const h = history[p - 1];
+                                const lastThree = h.slice(-3);
+                                return lastThree.length === 3 && lastThree[0] === round - 3 && lastThree[1] === round - 2 && lastThree[2] === round - 1;
+                            });
 
-    function dragStart(e) { dragSrc = e.target; }
-    function dropPlayer(e) {
-      e.preventDefault(); const tgt = e.target;
-      const srcC = dragSrc.dataset.c, srcI = dragSrc.dataset.i;
-      const tgtC = tgt.dataset.c, tgtI = tgt.dataset.i;
-      const tmp = globalSchedule[currentMatchIndex][srcC][srcI];
-      globalSchedule[currentMatchIndex][srcC][srcI] = globalSchedule[currentMatchIndex][tgtC][tgtI];
-      globalSchedule[currentMatchIndex][tgtC][tgtI] = tmp;
-      showMatchModal(currentMatchIndex); displaySchedule(); updateStatistics();
-    }
+                            if (validGroup) {
+                                group.forEach(p => used.add(p));
+                                currentCourts.push(group);
+                            } else {
+                                possible = false;
+                                break;
+                            }
+                        } else {
+                            possible = false;
+                            break;
+                        }
+                    }
 
-    function closeModal() { document.getElementById('matchModal').style.display = 'none'; }
+                    if (possible && currentCourts.length === numCourts) {
+                        roundMatch = currentCourts;
+                        roundMatch.forEach(group => group.forEach(p => {
+                            playCounts[p - 1]++;
+                            history[p - 1].push(round);
+                        }));
+                        break;
+                    }
+                    attempts++;
+                }
+                schedule.push(roundMatch);
+                if (roundMatch.length < numCourts) {
+                    console.warn(`Không thể tạo lịch hoàn chỉnh cho vòng ${round + 1} sau nhiều lần thử.`);
+                }
+            }
 
-    function updateStatistics() {
-      const sd = document.getElementById('statistics'); let html = '<h3>統計（出場回数）</h3><table><tr><th>番号</th>';
-      const n = +document.getElementById('numPlayers').value; const cnt = Array(n).fill(0);
-      globalSchedule.flat().flat().forEach(p => cnt[p - 1]++);
-      for (let i = 1; i <= n; i++) html += `<td>${i}</td>`; html += '</tr><tr><th>回数</th>';
-      cnt.forEach(c => html += `<td>${c}</td>`); html += '</tr></table>'; sd.innerHTML = html;
-    }
-  </script>
+            globalSchedule = schedule;
+            currentMatchIndex = 0;
+            updateDropdownOptions();
+            displaySchedule();
+            showMatchModal(0);
+            updateStatistics();
+            document.getElementById('scheduleTitle').textContent = isVietnamese ? "Lịch Thi Đấu" : "試合スケジュール";
+            document.getElementById('scheduleTitle').style.display = 'block';
+            document.getElementById('controlArea').style.display = 'block';
+            document.getElementById('schedule').style.display = 'block';
+            document.getElementById('statistics').style.display = 'block';
+        }
+
+        function updateDropdownOptions() {
+            const sel = document.getElementById('matchSelect');
+            sel.innerHTML = '';
+            globalSchedule.forEach((_, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = isVietnamese ? `Trận ${i + 1}` : `試合 ${i + 1}`;
+                sel.appendChild(opt);
+            });
+            sel.value = currentMatchIndex;
+        }
+
+        function displaySchedule() {
+            const d = document.getElementById('schedule');
+            let html = '<table><tr><th class="match-no">';
+            html += isVietnamese ? 'Trận' : '試合';
+            html += '</th>';
+            if (globalSchedule.length > 0 && globalSchedule[0].length > 0) {
+                globalSchedule[0].forEach((_, i) => html += `<th>${isVietnamese ? 'Sân' : 'コート'} ${i + 1}</th>`);
+            }
+            html += '</tr>';
+            globalSchedule.forEach((rnd, rIdx) => {
+                const cls = rIdx === currentMatchIndex ? 'current-match' : '';
+                html += `<tr class="${cls}" onclick="showMatchModal(${rIdx})"><td>${rIdx + 1}</td>`;
+                rnd.forEach(g => {
+                    const f = `${g[0]} ・ ${g[1]}\n${g[2]} ・ ${g[3]}`;
+                    html += `<td><div class="matchBox">${f}</div></td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+            d.innerHTML = html;
+        }
+
+        function nextMatch() {
+            if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1);
+        }
+
+        function nextMatchModal() {
+            if (currentMatchIndex < globalSchedule.length - 1) jumpToMatch(currentMatchIndex + 1);
+        }
+
+        function jumpToMatch(i) {
+            currentMatchIndex = +i;
+            updateDropdownOptions();
+            displaySchedule();
+            showMatchModal(currentMatchIndex);
+            updateStatistics();
+        }
+
+        function showMatchModal(idx) {
+            const modal = document.getElementById('matchModal');
+            const mc = document.getElementById('modalCourts');
+            mc.innerHTML = '';
+
+            document.getElementById('modalTitle').textContent = isVietnamese ?
+                `Trận ${idx + 1}` :
+                `試合 ${idx + 1}`;
+
+            if (globalSchedule[idx]) {
+                mc.style.setProperty('--num-courts', globalSchedule[idx].length);
+                globalSchedule[idx].forEach((grp, ci) => {
+                    const courtDiv = document.createElement('div');
+                    courtDiv.className = 'court-box';
+
+                    const title = document.createElement('h4');
+                    title.textContent = isVietnamese ?
+                        `Sân ${ci + 1}` :
+                        `コート ${ci + 1}`;
+                    courtDiv.appendChild(title);
+
+                    // upper pair
+                    const pair1 = document.createElement('div');
+                    pair1.className = 'pair-group';
+                    const p1a = document.createElement('div');
+                    p1a.className = 'player-box team1';
+                    p1a.textContent = grp[0];
+                    const p1b = document.createElement('div');
+                    p1b.className = 'player-box team1';
+                    p1b.textContent = grp[1];
+                    pair1.append(p1a, p1b);
+                    courtDiv.appendChild(pair1);
+
+                    // lower pair
+                    const pair2 = document.createElement('div');
+                    pair2.className = 'pair-group';
+                    const p2a = document.createElement('div');
+                    p2a.className = 'player-box team2';
+                    p2a.textContent = grp[2];
+                    const p2b = document.createElement('div');
+                    p2b.className = 'player-box team2';
+                    p2b.textContent = grp[3];
+                    pair2.append(p2a, p2b);
+                    courtDiv.appendChild(pair2);
+
+                    [p1a, p1b, p2a, p2b].forEach((box, idx) => {
+                        box.draggable = true;
+                        box.dataset.c = ci;
+                        box.dataset.i = idx;
+                        box.addEventListener('dragstart', dragStart);
+                        box.addEventListener('dragover', e => e.preventDefault());
+                        box.addEventListener('drop', dropPlayer);
+                    });
+                    mc.appendChild(courtDiv);
+                });
+            }
+
+            const modalButtons = document.querySelector('.modal-buttons');
+            if (modalButtons) {
+                modalButtons.innerHTML = `
+                    <button onclick="closeModal()">${isVietnamese ? 'Đóng' : '閉じる'}</button>
+                    <button onclick="nextMatchModal()">${isVietnamese ? 'Trận tiếp theo' : '次の試合へ'}</button>
+                `;
+            }
+
+            modal.style.display = 'block';
+            document.getElementById('matchSelect').value = idx;
+        }
+
+        function dragStart(e) {
+            dragSrc = e.target;
+        }
+
+        function dropPlayer(e) {
+            e.preventDefault();
+            const tgt = e.target;
+            const srcC = dragSrc.dataset.c, srcI = dragSrc.dataset.i;
+            const tgtC = tgt.dataset.c, tgtI = tgt.dataset.i;
+            if (globalSchedule[currentMatchIndex] && globalSchedule[currentMatchIndex][srcC] && globalSchedule[currentMatchIndex][tgtC]) {
+                const tmp = globalSchedule[currentMatchIndex][srcC][srcI];
+                globalSchedule[currentMatchIndex][srcC][srcI] = globalSchedule[currentMatchIndex][tgtC][tgtI];
+                globalSchedule[currentMatchIndex][tgtC][tgtI] = tmp;
+                showMatchModal(currentMatchIndex);
+                displaySchedule();
+                updateStatistics();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('matchModal').style.display = 'none';
+        }
+
+        function updateStatistics() {
+            const sd = document.getElementById('statistics');
+            let html = `<h3>${isVietnamese ? 'Thống kê (Số lần ra sân)' : '統計（出場回数）'}</h3><table><tr><th>${isVietnamese ? 'Số' : '番号'}</th>`;
+            const n = +document.getElementById('numPlayers').value;
+            const cnt = Array(n).fill(0);
+            if (globalSchedule && globalSchedule.length > 0) {
+                globalSchedule.flat().flat().forEach(p => cnt[p - 1]++);
+            }
+
+            for (let i = 1; i <= n; i++) html += `<td>${i}</td>`;
+            html += `</tr><tr><th>${isVietnamese ? 'Số lần' : '回数'}</th>`;
+            cnt.forEach(c => html += `<td>${c}</td>`);
+            html += '</tr></table>';
+            sd.innerHTML = html;
+        }
+
+        function showCreatorModal() {
+            document.getElementById('creatorModal').style.display = 'block';
+        }
+
+        function closeCreatorModal() {
+            document.getElementById('creatorModal').style.display = 'none';
+        }
+
+        // Initial language setup
+        toggleLanguage();
+    </script>
 </body>
 </html>
