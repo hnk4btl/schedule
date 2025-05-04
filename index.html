@@ -2,485 +2,76 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Lịch Thi Đấu</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
-    }
-    h1, h2 {
-      margin: 10px 0;
-    }
-    label, button, select {
-      margin: 5px;
-    }
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
-      width: 98%;
-      table-layout: fixed;
-    }
-    th, td {
-      border: 1px solid black;
-      font-size: 10pt;
-      text-align: center;
-      vertical-align: middle;
-      padding: 4px;
-      box-sizing: border-box;
-      word-wrap: break-word;
-    }
-    th.match-no {
-      width: 28px;
-    }
-    th:not(.match-no), td:not(:first-child) {
-      width: 23%;
-    }
-    .matchBox {
-      font-size: 10pt;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      white-space: pre-line;
-    }
-    #scheduleTitle {
-      margin-top: 1cm;
-      font-size: 14pt;
-      font-weight: bold;
-      display: none;
-    }
-    .current-match {
-      background-color: #ffe0b3 !important;
-    }
-    @media print {
-      #header, #statistics, #controlArea {
-        display: none;
-      }
-    }
-    /* Modal styling */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background-color: white;
-      margin: 5% auto;
-      padding: 20px;
-      width: 85%;
-      max-width: 900px;
-      border-radius: 10px;
-      text-align: center;
-      position: relative;
-    }
-    #modalCourts {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    .court-box {
-      border: 1px solid #666;
-      padding: 10px;
-      box-sizing: border-box;
-      margin: 0;
-      min-height: 140px;
-    }
-    .court-box h4 {
-      margin: 0 0 10px;
-      font-size: 16pt;
-    }
-    .pair-group {
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-    }
-    .player-box {
-      width: 48%;
-      padding: 8px;
-      border-radius: 6px;
-      text-align: center;
-      cursor: grab;
-      user-select: none;
-      font-size: 14pt;
-    }
-    .team1 {
-      background-color: #ADD8E6;
-    }
-    .team2 {
-      background-color: #FFDAB9;
-    }
-    .modal-buttons {
-      margin-top: 15px;
-      display: flex;
-      justify-content: space-around;
-    }
-    .modal-buttons button {
-      padding: 8px 16px;
-      font-size: 12pt;
-      cursor: pointer;
-    }
-    .modal-author {
-      margin-top: 20px;
-      font-style: italic;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Thi Đấu Cầu Lông</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="header">
-    <h1>Lịch Thi Đấu</h1>
-    <label>Số người chơi: <input type="number" id="numPlayers" value="28" min="4"></label>
-    <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
-    <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
-    <button onclick="generateSchedule()">Tạo lịch đấu</button>
-    <button onclick="clearData()" style="margin-left: 10px;">Xóa dữ liệu</button>
-  </div>
-  
-  <h2 id="scheduleTitle">Lịch Thi Đấu</h2>
-  <div id="controlArea" style="display: none;">
-    <label for="matchSelect">Trận hiện tại:</label>
-    <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
-    <button onclick="nextMatch()">Trận tiếp theo</button>
-  </div>
-  
-  <div id="schedule" style="display: none;"></div>
-  <div id="statistics" style="display: none;"></div>
-
-  <div id="matchModal" class="modal">
-    <div class="modal-content">
-      <h3 id="modalTitle"></h3>
-      <div id="modalCourts"></div>
-      <div class="modal-buttons">
-        <button onclick="closeModal()">Đóng</button>
-        <button onclick="nextMatchModal()">Trận tiếp theo</button>
+  <div class="container">
+    <h1>Lịch Thi Đấu Cầu Lông</h1>
+    
+    <div class="control-panel">
+      <div class="form-group">
+        <label for="numPlayers">Số người chơi:</label>
+        <input type="number" id="numPlayers" min="4" value="16">
       </div>
-      <div class="modal-author">Created by HOANG NAM</div>
+      
+      <div class="form-group">
+        <label for="numCourts">Số sân:</label>
+        <input type="number" id="numCourts" min="1" value="2">
+      </div>
+      
+      <div class="form-group">
+        <label for="numRounds">Số trận:</label>
+        <input type="number" id="numRounds" min="1" value="10">
+      </div>
+      
+      <button id="generateBtn">Tạo lịch đấu</button>
+      <button id="clearBtn" class="secondary">Xóa dữ liệu</button>
+    </div>
+    
+    <div id="matchControl" style="display: none;">
+      <div class="form-group">
+        <label for="matchSelect">Trận hiện tại:</label>
+        <select id="matchSelect"></select>
+        <button id="nextMatchBtn">Trận tiếp theo</button>
+      </div>
+    </div>
+    
+    <div id="scheduleContainer" style="display: none;">
+      <h2>Lịch Thi Đấu</h2>
+      <table class="schedule-table" id="scheduleTable"></table>
+    </div>
+    
+    <div class="stats-section" id="statsSection" style="display: none;">
+      <h2>Thống Kê</h2>
+      <div class="stats-grid" id="statsGrid"></div>
+      
+      <h3>Thống kê người chơi</h3>
+      <table class="player-stats-table" id="playerStatsTable"></table>
+    </div>
+  </div>
+  
+  <!-- Match Modal -->
+  <div class="modal" id="matchModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Trận đấu</h3>
+        <button class="close-button" id="closeModalBtn">&times;</button>
+      </div>
+      
+      <div id="courtsContainer"></div>
+      
+      <div class="modal-footer">
+        <button class="secondary" id="prevMatchBtn">Trận trước</button>
+        <div>
+          <button class="secondary" id="closeModalBtn2">Đóng</button>
+          <button id="nextMatchModalBtn">Trận tiếp theo</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="languageToggle" style="position: absolute; top: 20px; right: 20px;">
-    <button id="toggleButton" onclick="toggleLanguage()">日本語 / Tiếng Việt</button>
-  </div>
-
-  <script>
-    let globalSchedule = [];
-    let currentMatchIndex = 0;
-    let dragSrc = null;
-    let isVietnamese = true;
-
-    // Lưu dữ liệu vào localStorage
-    function saveData() {
-      const data = {
-        schedule: globalSchedule,
-        currentMatchIndex: currentMatchIndex,
-        numPlayers: document.getElementById('numPlayers').value,
-        numCourts: document.getElementById('numCourts').value,
-        numRounds: document.getElementById('numRounds').value,
-        isVietnamese: isVietnamese
-      };
-      localStorage.setItem('badmintonScheduleData', JSON.stringify(data));
-    }
-
-    // Load dữ liệu từ localStorage
-    function loadData() {
-      const savedData = localStorage.getItem('badmintonScheduleData');
-      if (savedData) {
-        const data = JSON.parse(savedData);
-        globalSchedule = data.schedule || [];
-        currentMatchIndex = data.currentMatchIndex || 0;
-        document.getElementById('numPlayers').value = data.numPlayers || 28;
-        document.getElementById('numCourts').value = data.numCourts || 4;
-        document.getElementById('numRounds').value = data.numRounds || 13;
-        isVietnamese = data.isVietnamese !== undefined ? data.isVietnamese : true;
-        
-        // Cập nhật giao diện
-        toggleLanguage();
-        updateDropdownOptions();
-        displaySchedule();
-        updateStatistics();
-        
-        // Hiển thị các phần tử đã bị ẩn ban đầu
-        document.getElementById('scheduleTitle').style.display = 'block';
-        document.getElementById('controlArea').style.display = 'block';
-        document.getElementById('schedule').style.display = 'block';
-        document.getElementById('statistics').style.display = 'block';
-      }
-    }
-
-    // Xóa dữ liệu đã lưu
-    function clearData() {
-      localStorage.removeItem('badmintonScheduleData');
-      location.reload();
-    }
-
-    // Gọi hàm loadData khi trang được tải
-    window.addEventListener('load', loadData);
-
-    function toggleLanguage() {
-      isVietnamese = !isVietnamese;
-      if (isVietnamese) {
-        document.documentElement.lang = "vi";
-        document.getElementById('header').innerHTML = `
-          <h1>Lịch Thi Đấu</h1>
-          <label>Số người chơi: <input type="number" id="numPlayers" value="28" min="4"></label>
-          <label>Số sân: <input type="number" id="numCourts" value="4" min="1"></label>
-          <label>Số trận đấu: <input type="number" id="numRounds" value="13" min="1"></label>
-          <button onclick="generateSchedule()">Tạo lịch đấu</button>
-          <button onclick="clearData()" style="margin-left: 10px;">Xóa dữ liệu</button>
-        `;
-        document.getElementById('controlArea').innerHTML = `
-          <label for="matchSelect">Trận hiện tại:</label>
-          <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
-          <button onclick="nextMatch()">Trận tiếp theo</button>
-        `;
-        document.getElementById('toggleButton').innerHTML = "日本語 / Tiếng Việt";
-        document.getElementById('scheduleTitle').textContent = "Lịch Thi Đấu";
-      } else {
-        document.documentElement.lang = "ja";
-        document.getElementById('header').innerHTML = `
-          <h1>試合スケジュール</h1>
-          <label>人数: <input type="number" id="numPlayers" value="28" min="4"></label>
-          <label>コート数: <input type="number" id="numCourts" value="4" min="1"></label>
-          <label>試合数: <input type="number" id="numRounds" value="13" min="1"></label>
-          <button onclick="generateSchedule()">作成</button>
-          <button onclick="clearData()" style="margin-left: 10px;">データ消去</button>
-        `;
-        document.getElementById('controlArea').innerHTML = `
-          <label for="matchSelect">現在の試合:</label>
-          <select id="matchSelect" onchange="jumpToMatch(this.value)"></select>
-          <button onclick="nextMatch()">次の試合へ進む</button>
-        `;
-        document.getElementById('toggleButton').innerHTML = "Tiếng Việt / 日本語";
-        document.getElementById('scheduleTitle').textContent = "試合スケジュール";
-      }
-      saveData(); // Lưu trạng thái ngôn ngữ
-      updateDropdownOptions();
-      displaySchedule();
-      updateStatistics();
-      if (globalSchedule.length > 0) {
-        document.getElementById('modalTitle').textContent = isVietnamese ? 
-          `Trận ${currentMatchIndex + 1}` : 
-          `試合 ${currentMatchIndex + 1}`;
-      }
-    }
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function generateSchedule() {
-      const numPlayers = +document.getElementById('numPlayers').value;
-      const numCourts = +document.getElementById('numCourts').value;
-      const numRounds = +document.getElementById('numRounds').value;
-      const players = Array.from({ length: numPlayers }, (_, i) => i + 1);
-      const playCounts = Array(numPlayers).fill(0);
-      const history = Array.from({ length: numPlayers }, () => []);
-      const schedule = [];
-
-      for (let round = 0; round < numRounds; round++) {
-        const roundMatch = [];
-        const used = new Set();
-        for (let court = 0; court < numCourts; court++) {
-          let eligible = players.filter(p => {
-            const h = history[p - 1];
-            const last2 = h.slice(-2);
-            const played2 = last2[0] === round - 2 && last2[1] === round - 1;
-            const missed2 = h.length > 1 && h[h.length - 2] < round - 2 && h[h.length - 1] < round - 1;
-            return !used.has(p) && !played2 && !missed2;
-          });
-          if (eligible.length < 4) eligible = players.filter(p => !used.has(p));
-          shuffle(eligible);
-          eligible.sort((a, b) => playCounts[a - 1] - playCounts[b - 1]);
-          const group = eligible.slice(0, 4);
-          group.forEach(p => { used.add(p); playCounts[p - 1]++; history[p - 1].push(round); });
-          roundMatch.push(group);
-        }
-        schedule.push(roundMatch);
-      }
-      globalSchedule = schedule;
-      currentMatchIndex = 0;
-      saveData(); // Lưu dữ liệu sau khi tạo lịch
-      updateDropdownOptions();
-      displaySchedule();
-      showMatchModal(0);
-      updateStatistics();
-      document.getElementById('scheduleTitle').style.display = 'block';
-      document.getElementById('controlArea').style.display = 'block';
-      document.getElementById('schedule').style.display = 'block';
-      document.getElementById('statistics').style.display = 'block';
-    }
-
-    function updateDropdownOptions() {
-      const sel = document.getElementById('matchSelect'); 
-      sel.innerHTML = '';
-      globalSchedule.forEach((_, i) => {
-        const opt = document.createElement('option'); 
-        opt.value = i;
-        opt.textContent = isVietnamese ? `Trận ${i + 1}` : `試合 ${i + 1}`;
-        sel.appendChild(opt);
-      });
-      sel.value = currentMatchIndex;
-    }
-
-    function displaySchedule() {
-      const d = document.getElementById('schedule');
-      let html = '<table><tr><th class="match-no">';
-      html += isVietnamese ? 'Trận' : '試合';
-      html += '</th>';
-      globalSchedule[0].forEach((_, i) => html += `<th>${isVietnamese ? 'Sân' : 'コート'} ${i + 1}</th>`);
-      html += '</tr>';
-      globalSchedule.forEach((rnd, rIdx) => {
-        const cls = rIdx === currentMatchIndex ? 'current-match' : '';
-        html += `<tr class="${cls}" onclick="showMatchModal(${rIdx})"><td>${rIdx + 1}</td>`;
-        rnd.forEach(g => {
-          const f = `${g[0]} ・ ${g[1]}\n${g[2]} ・ ${g[3]}`;
-          html += `<td><div class="matchBox">${f}</div></td>`;
-        });
-        html += '</tr>';
-      });
-      html += '</table>';
-      d.innerHTML = html;
-    }
-
-    function nextMatch() { 
-      if (currentMatchIndex < globalSchedule.length - 1) {
-        jumpToMatch(currentMatchIndex + 1); 
-      }
-    }
-    
-    function nextMatchModal() { 
-      if (currentMatchIndex < globalSchedule.length - 1) {
-        jumpToMatch(currentMatchIndex + 1); 
-      }
-    }
-
-    function jumpToMatch(i) {
-      currentMatchIndex = +i;
-      saveData(); // Lưu trận hiện tại
-      updateDropdownOptions();
-      displaySchedule();
-      showMatchModal(currentMatchIndex);
-      updateStatistics();
-    }
-
-    function showMatchModal(idx) {
-      const modal = document.getElementById('matchModal');
-      const mc = document.getElementById('modalCourts'); 
-      mc.innerHTML = '';
-      
-      document.getElementById('modalTitle').textContent = isVietnamese ? 
-        `Trận ${idx + 1}` : 
-        `試合 ${idx + 1}`;
-      
-      mc.style.setProperty('--num-courts', globalSchedule[idx].length);
-      
-      globalSchedule[idx].forEach((grp, ci) => {
-        const courtDiv = document.createElement('div'); 
-        courtDiv.className = 'court-box';
-        
-        const title = document.createElement('h4'); 
-        title.textContent = isVietnamese ? 
-          `Sân ${ci + 1}` : 
-          `コート ${ci + 1}`;
-        courtDiv.appendChild(title);
-
-        // upper pair
-        const pair1 = document.createElement('div'); 
-        pair1.className = 'pair-group';
-        const p1a = document.createElement('div'); 
-        p1a.className = 'player-box team1'; 
-        p1a.textContent = grp[0];
-        const p1b = document.createElement('div'); 
-        p1b.className = 'player-box team1'; 
-        p1b.textContent = grp[1];
-        pair1.append(p1a, p1b); 
-        courtDiv.appendChild(pair1);
-        
-        // lower pair
-        const pair2 = document.createElement('div'); 
-        pair2.className = 'pair-group';
-        const p2a = document.createElement('div'); 
-        p2a.className = 'player-box team2'; 
-        p2a.textContent = grp[2];
-        const p2b = document.createElement('div'); 
-        p2b.className = 'player-box team2'; 
-        p2b.textContent = grp[3];
-        pair2.append(p2a, p2b); 
-        courtDiv.appendChild(pair2);
-
-        [p1a, p1b, p2a, p2b].forEach((box, idx) => {
-          box.draggable = true; 
-          box.dataset.c = ci; 
-          box.dataset.i = idx;
-          box.addEventListener('dragstart', dragStart);
-          box.addEventListener('dragover', e => e.preventDefault());
-          box.addEventListener('drop', dropPlayer);
-        });
-        mc.appendChild(courtDiv);
-      });
-      
-      // Update modal buttons
-      const modalButtons = document.querySelector('.modal-buttons');
-      if (modalButtons) {
-        modalButtons.innerHTML = `
-          <button onclick="closeModal()">${isVietnamese ? 'Đóng' : '閉じる'}</button>
-          <button onclick="nextMatchModal()">${isVietnamese ? 'Trận tiếp theo' : '次の試合へ'}</button>
-        `;
-      }
-      
-      modal.style.display = 'block'; 
-      document.getElementById('matchSelect').value = idx;
-    }
-
-    function dragStart(e) { 
-      dragSrc = e.target; 
-    }
-    
-    function dropPlayer(e) {
-      e.preventDefault(); 
-      const tgt = e.target;
-      const srcC = dragSrc.dataset.c, srcI = dragSrc.dataset.i;
-      const tgtC = tgt.dataset.c, tgtI = tgt.dataset.i;
-      const tmp = globalSchedule[currentMatchIndex][srcC][srcI];
-      globalSchedule[currentMatchIndex][srcC][srcI] = globalSchedule[currentMatchIndex][tgtC][tgtI];
-      globalSchedule[currentMatchIndex][tgtC][tgtI] = tmp;
-      saveData(); // Lưu thay đổi sau khi kéo thả
-      showMatchModal(currentMatchIndex); 
-      displaySchedule(); 
-      updateStatistics();
-    }
-
-    function closeModal() { 
-      document.getElementById('matchModal').style.display = 'none'; 
-    }
-
-    function updateStatistics() {
-      const sd = document.getElementById('statistics');
-      let html = `<h3>${isVietnamese ? 'Thống kê (Số lần ra sân)' : '統計（出場回数）'}</h3><table><tr><th>${isVietnamese ? 'Số' : '番号'}</th>`;
-      const n = +document.getElementById('numPlayers').value;
-      const cnt = Array(n).fill(0);
-      globalSchedule.flat().flat().forEach(p => cnt[p - 1]++);
-      for (let i = 1; i <= n; i++) html += `<td>${i}</td>`;
-      html += `</tr><tr><th>${isVietnamese ? 'Số lần' : '回数'}</th>`;
-      cnt.forEach(c => html += `<td>${c}</td>`);
-      html += '</tr></table>';
-      sd.innerHTML = html;
-    }
-
-    // Initial language setup
-    toggleLanguage();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
