@@ -216,7 +216,7 @@ button.secondary:hover {
   font-weight: 700;
   text-align: center;
   margin-bottom: 8px;
-  font-size: 26px;
+  font-size: 20px;
 }
 
 .team-a .team-label {
@@ -233,7 +233,7 @@ button.secondary:hover {
   border-radius: 4px;
   text-align: center;
   font-weight: 600;
-  font-size: 38px;
+  font-size: 30px;
   cursor: grab;
   user-select: none;
 }
